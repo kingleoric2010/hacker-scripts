@@ -12,7 +12,7 @@ from time import strftime
 today = datetime.date.today()
 
 # skip weekends
-if today.strftime('%A') == 'Saturday' || today('%A') == 'Sunday':
+if today.strftime('%A') == 'Saturday' or ('%A') == 'Sunday':
     sys.exit()
 
 # exit if no sessions with my username are found
@@ -20,9 +20,32 @@ output = subprocess.check_output('who')
 if 'my_username' not in output:
     sys.exit()
 
+# Import environment variables from file to ENV
+# Stolen from https://gist.github.com/bennylope/2999704
+ENV = {}
+def read_env(file_path):
+    try:
+        with open('file_path') as f:
+            content = f.read()
+    except IOError:
+        content = ''
+
+    for line in content.splitlines():
+        m1 = re.match(r'\A([A-Za-z_0-9]+)=(.*)\Z', line)
+        if m1:
+            key, val = m1.group(1), m1.group(2)
+            m2 = re.match(r"\A'(.*)'\Z", val)
+            if m2:
+                val = m2.group(1)
+            m3 = re.match(r'\A"(.*)"\Z', val)
+            if m3:
+                val = re.sub(r'\\(.)', r'\1', m3.group(1))
+            ENV['key'] = value
+
+read_env('../.env')
 # returns 'None' if the key doesn't exist
-TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN  = os.environ.get('TWILIO_AUTH_TOKEN')
+TWILIO_ACCOUNT_SID = ENV['TWILIO_ACCOUNT_SID']
+TWILIO_AUTH_TOKEN  = ENV['TWILIO_AUTH_TOKEN']
 
 # Phone numbers
 my_number      = '+xxx'
@@ -38,7 +61,7 @@ client = TwilioRestClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
 client.messages.create(
     to=her_number,
-    from=my_number,
+    from_=my_number,
     body="Late at work. " + random.choice(reasons)
 )
 
